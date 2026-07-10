@@ -7,59 +7,75 @@ use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
-{
-    return view('clients.index');
-}
+    {
+        $clients = Client::latest()->paginate(10);
 
-    /**
-     * Show the form for creating a new resource.
-     */
+        return view('clients.index', compact('clients'));
+    }
+
     public function create()
     {
-        //
+        return view('clients.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'company_name' => 'required|max:255',
+        'pin' => 'required|unique:clients,pin',
+        'email' => 'nullable|email',
+        'phone' => 'nullable|max:255',
+        'contact_person' => 'nullable|max:255',
+        'industry' => 'nullable|max:255',
+        'address' => 'nullable',
+    ]);
 
-    /**
-     * Display the specified resource.
-     */
+    $validated['is_active'] = $request->has('is_active');
+
+    Client::create($validated);
+
+    return redirect()
+        ->route('clients.index')
+        ->with('success', 'Client added successfully.');
+}
+
     public function show(Client $client)
     {
-        //
+        return view('clients.show', compact('client'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Client $client)
-    {
-        //
-    }
+{
+    return view('clients.edit', compact('client'));
+}
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Client $client)
-    {
-        //
-    }
+{
+    $validated = $request->validate([
+        'company_name'   => 'required|max:255',
+        'pin'            => 'required|unique:clients,pin,' . $client->id,
+        'email'          => 'nullable|email',
+        'phone'          => 'nullable|max:255',
+        'contact_person' => 'nullable|max:255',
+        'industry'       => 'nullable|max:255',
+        'address'        => 'nullable',
+    ]);
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    $validated['is_active'] = $request->has('is_active');
+
+    $client->update($validated);
+
+    return redirect()
+        ->route('clients.index')
+        ->with('success', 'Client updated successfully.');
+}
     public function destroy(Client $client)
     {
-        //
+        $client->delete();
+
+        return redirect()
+            ->route('clients.index')
+            ->with('success', 'Client deleted successfully.');
     }
 }

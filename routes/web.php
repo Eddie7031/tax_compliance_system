@@ -3,14 +3,18 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ClientController;
+use App\Models\Client;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 Route::get('/dashboard', function () {
-    return view('admin.dashboard');
+    return view('admin.dashboard', [
+        'clients' => Client::count(),
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 Route::middleware(['auth'])->group(function () {
 
     // Client Routes

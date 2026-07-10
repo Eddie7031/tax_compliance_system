@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'Tax Compliance System',
+    'title' => 'Tax Compliance & Reconciliation System',
 'title_prefix' => '',
 'title_postfix' => '',
 
