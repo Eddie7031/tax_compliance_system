@@ -40,11 +40,15 @@ public function store(Request $request)
         ->with('success', 'Client added successfully.');
 }
 
-    public function show(Client $client)
-    {
-        return view('clients.show', compact('client'));
-    }
+ public function show(Client $client)
+{
+    $client->load([
+        'documents',
+        'taxObligations'
+    ]);
 
+    return view('clients.show', compact('client'));
+}
     public function edit(Client $client)
 {
     return view('clients.edit', compact('client'));

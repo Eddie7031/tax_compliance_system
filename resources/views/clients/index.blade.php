@@ -2,23 +2,37 @@
 
 @section('title', 'Client Management')
 
+@section('plugins.Datatables', true)
+
+@push('css')
+<link rel="stylesheet"
+href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap4.min.css">
+@endpush
+
+
 @section('content_header')
 
 <div class="d-flex justify-content-between align-items-center">
 
     <div>
+
         <h1>
             <i class="fas fa-users text-primary"></i>
             Client Management
         </h1>
+
         <small class="text-muted">
-            Manage all registered clients for Tax Compliance & Reconciliation
+            Manage all registered clients for Tax Compliance & Reconciliation System
         </small>
+
     </div>
 
     <a href="{{ route('clients.create') }}" class="btn btn-primary">
+
         <i class="fas fa-plus-circle"></i>
+
         Add Client
+
     </a>
 
 </div>
@@ -37,15 +51,15 @@
     {{ session('success') }}
 
     <button type="button" class="close" data-dismiss="alert">
+
         <span>&times;</span>
+
     </button>
 
 </div>
 
 @endif
 
-
-{{-- Statistics Cards --}}
 
 <div class="row mb-3">
 
@@ -62,12 +76,15 @@
             </div>
 
             <div class="icon">
+
                 <i class="fas fa-users"></i>
+
             </div>
 
         </div>
 
     </div>
+
 
     <div class="col-md-4">
 
@@ -82,12 +99,15 @@
             </div>
 
             <div class="icon">
+
                 <i class="fas fa-user-check"></i>
+
             </div>
 
         </div>
 
     </div>
+
 
     <div class="col-md-4">
 
@@ -102,7 +122,9 @@
             </div>
 
             <div class="icon">
+
                 <i class="fas fa-user-times"></i>
+
             </div>
 
         </div>
@@ -126,26 +148,22 @@
 
     </div>
 
+
     <div class="card-body">
 
-        <table id="clientsTable" class="table table-bordered table-hover table-striped">
+        <table id="clientsTable"
+               class="table table-bordered table-hover table-striped">
 
             <thead class="bg-primary">
 
             <tr>
 
                 <th>#</th>
-
                 <th>Company</th>
-
                 <th>PIN</th>
-
                 <th>Contact Person</th>
-
                 <th>Industry</th>
-
                 <th>Status</th>
-
                 <th width="180">Actions</th>
 
             </tr>
@@ -190,34 +208,42 @@
 
                         <a href="{{ route('clients.show',$client) }}"
                            class="btn btn-info btn-sm"
+                           data-toggle="tooltip"
                            title="View">
 
                             <i class="fas fa-eye"></i>
 
                         </a>
 
+
                         <a href="{{ route('clients.edit',$client) }}"
                            class="btn btn-warning btn-sm"
+                           data-toggle="tooltip"
                            title="Edit">
 
                             <i class="fas fa-edit"></i>
 
                         </a>
 
-                       <form action="{{ route('clients.destroy', $client) }}"
-      method="POST"
-      class="delete-form"
-      style="display:inline;">
 
-    @csrf
-    @method('DELETE')
+                        <form action="{{ route('clients.destroy',$client) }}"
+                              method="POST"
+                              class="delete-form d-inline">
 
-    <button type="submit"
-            class="btn btn-danger btn-sm">
-        <i class="fas fa-trash"></i>
-    </button>
+                            @csrf
 
-</form>
+                            @method('DELETE')
+
+                            <button class="btn btn-danger btn-sm"
+                                    type="submit"
+                                    data-toggle="tooltip"
+                                    title="Delete">
+
+                                <i class="fas fa-trash"></i>
+
+                            </button>
+
+                        </form>
 
                     </td>
 
@@ -250,9 +276,30 @@
 
 @push('js')
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap4.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+
+
 <script>
 
 $(document).ready(function () {
+
+    $('[data-toggle="tooltip"]').tooltip();
 
     $('#clientsTable').DataTable({
 
@@ -263,8 +310,11 @@ $(document).ready(function () {
         pageLength: 10,
 
         lengthMenu: [
+
             [10,25,50,100,-1],
+
             [10,25,50,100,"All"]
+
         ],
 
         order: [[1,'asc']],
@@ -275,88 +325,72 @@ $(document).ready(function () {
 
             {
                 extend:'copy',
-                className:'btn btn-secondary'
+                className:'btn btn-secondary btn-sm'
+            },
+
+            {
+                extend:'csv',
+                className:'btn btn-success btn-sm'
             },
 
             {
                 extend:'excel',
-                className:'btn btn-success'
+                className:'btn btn-success btn-sm'
             },
 
             {
                 extend:'pdf',
-                className:'btn btn-danger'
+                className:'btn btn-danger btn-sm'
             },
 
             {
                 extend:'print',
-                className:'btn btn-primary'
+                className:'btn btn-primary btn-sm'
+            },
+
+            {
+                extend:'colvis',
+                className:'btn btn-warning btn-sm'
             }
 
         ]
 
     });
 
-});
 
-</script>
+    $('.delete-form').submit(function(e){
 
-@endpush
-@push('js')
+        e.preventDefault();
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        let form = this;
 
-<script>
+        Swal.fire({
 
-$(function () {
+            title: 'Delete Client?',
 
-    $('#clientsTable').DataTable({
-        responsive: true,
-        autoWidth: false,
-        pageLength: 10,
-        dom: 'Bfrtip',
-        buttons: [
-            'copy',
-            'csv',
-            'excel',
-            'pdf',
-            'print',
-            'colvis'
-        ]
-    });
+            text: 'This action cannot be undone.',
 
-});
+            icon: 'warning',
 
+            showCancelButton: true,
 
-$('.delete-form').submit(function(e){
+            confirmButtonColor: '#d33',
 
-    e.preventDefault();
+            cancelButtonColor: '#3085d6',
 
-    let form = this;
+            confirmButtonText: 'Yes, Delete',
 
-    Swal.fire({
+            cancelButtonText: 'Cancel'
 
-        title: 'Delete Client?',
-        text: 'This client will be permanently deleted!',
-        icon: 'warning',
+        }).then((result)=>{
 
-        showCancelButton: true,
+            if(result.isConfirmed){
 
-        confirmButtonColor: '#d33',
+                form.submit();
 
-        cancelButtonColor: '#3085d6',
+            }
 
-        confirmButtonText: 'Yes, Delete',
-
-        cancelButtonText: 'Cancel'
-
-    }).then((result)=>{
-
-        if(result.isConfirmed){
-
-            form.submit();
-
-        }
+        });
 
     });
 

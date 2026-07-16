@@ -16,4 +16,18 @@ class Client extends Model
         'address',
         'is_active',
     ];
+
+    public function documents()
+    {
+        return $this->hasMany(ClientDocument::class);
+    }
+
+    public function taxObligations()
+    {
+        return $this->hasMany(TaxObligation::class);
+    }
+    public function vatAnalyses()
+{
+    return $this->hasMany(VatAnalysis::class);
+}
 }
