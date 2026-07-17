@@ -12,30 +12,15 @@ use App\Http\Controllers\VatPurchaseController;
 use App\Http\Controllers\VatTransactionController;
 use App\Http\Controllers\SalesVatController;
 use App\Http\Controllers\VatReconciliationController;
-use App\Http\Controllers\PurchaseVatController;
-use App\Http\Controllers\DuplicateInvoiceController;
-use App\Http\Controllers\VatExportController;
+use App\Http\Controllers\VatImportController;
 use App\Http\Controllers\VatPdfController;
-Route::get(
-    '/vat-analyses/{vatAnalysis}/export/pdf',
-    [VatPdfController::class,'generate']
-)->name('vat.export.pdf');
-Route::get(
-    '/vat-analyses/{vatAnalysis}/export/excel',
-    [VatExportController::class,'excel']
-)->name('vat.export.excel');
-Route::get(
-    '/vat-analyses/{vatAnalysis}/duplicate-invoices',
-    [DuplicateInvoiceController::class,'index']
-)->name('duplicate-invoices.index');
-Route::get(
-    '/vat-analyses/{vatAnalysis}/purchases',
-    [PurchaseVatController::class, 'index']
-)->name('purchase-vat.index');
+use App\Http\Controllers\VatExportController;
+use App\Http\Controllers\DuplicateInvoiceController;
+use App\Http\Controllers\PurchaseVatController;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Welcome
 |--------------------------------------------------------------------------
 */
 
@@ -99,27 +84,27 @@ Route::middleware(['auth'])->group(function () {
     */
 
     Route::get(
-        'clients/{client}/tax-obligations/create',
+        '/clients/{client}/tax-obligations/create',
         [TaxObligationController::class, 'create']
     )->name('tax-obligations.create');
 
     Route::post(
-        'clients/{client}/tax-obligations',
+        '/clients/{client}/tax-obligations',
         [TaxObligationController::class, 'store']
     )->name('tax-obligations.store');
 
     Route::get(
-        'tax-obligations/{taxObligation}/edit',
+        '/tax-obligations/{taxObligation}/edit',
         [TaxObligationController::class, 'edit']
     )->name('tax-obligations.edit');
 
     Route::put(
-        'tax-obligations/{taxObligation}',
+        '/tax-obligations/{taxObligation}',
         [TaxObligationController::class, 'update']
     )->name('tax-obligations.update');
 
     Route::delete(
-        'tax-obligations/{taxObligation}',
+        '/tax-obligations/{taxObligation}',
         [TaxObligationController::class, 'destroy']
     )->name('tax-obligations.destroy');
 
@@ -141,7 +126,7 @@ Route::middleware(['auth'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | VAT Transaction Import
+    | VAT Transactions
     |--------------------------------------------------------------------------
     */
 
@@ -157,7 +142,7 @@ Route::middleware(['auth'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Sales VAT Register
+    | VAT Sales Register
     |--------------------------------------------------------------------------
     */
 
@@ -165,6 +150,17 @@ Route::middleware(['auth'])->group(function () {
         '/vat-analyses/{vatAnalysis}/sales',
         [SalesVatController::class, 'index']
     )->name('sales-vat.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | VAT Purchase Register
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/vat-analyses/{vatAnalysis}/purchases',
+        [PurchaseVatController::class, 'index']
+    )->name('purchase-vat.index');
 
     /*
     |--------------------------------------------------------------------------
@@ -177,9 +173,80 @@ Route::middleware(['auth'])->group(function () {
         [VatReconciliationController::class, 'reconcile']
     )->name('vat-analyses.reconcile');
 
+    Route::prefix('vat-analyses/{vatAnalysis}')->group(function () {
+
+        Route::get(
+            '/review',
+            [VatReconciliationController::class, 'review']
+        )->name('vat.review');
+
+        Route::put(
+            '/review',
+            [VatReconciliationController::class, 'updateReview']
+        )->name('vat.review.update');
+
+        Route::get(
+            '/reconciliation',
+            [VatReconciliationController::class, 'index']
+        )->name('vat.reconciliation');
+    });
+
     /*
     |--------------------------------------------------------------------------
-    | User Profile
+    | VAT Imports
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/vat-analyses/{vatAnalysis}/sales/import',
+        [VatImportController::class, 'importSales']
+    )->name('vat.sales.import');
+
+    Route::post(
+        '/vat-analyses/{vatAnalysis}/purchases/import',
+        [VatImportController::class, 'importPurchases']
+    )->name('vat.purchase.import');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Export PDF / Excel
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/vat-analyses/{vatAnalysis}/pdf',
+        [VatPdfController::class, 'download']
+    )->name('vat.pdf');
+
+    Route::get(
+        '/vat-analyses/{vatAnalysis}/excel',
+        [VatExportController::class, 'export']
+    )->name('vat.export');
+
+    Route::get(
+        '/vat-analyses/{vatAnalysis}/export/pdf',
+        [VatPdfController::class, 'generate']
+    )->name('vat.export.pdf');
+
+    Route::get(
+        '/vat-analyses/{vatAnalysis}/export/excel',
+        [VatExportController::class, 'excel']
+    )->name('vat.export.excel');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Duplicate Invoices
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/vat-analyses/{vatAnalysis}/duplicate-invoices',
+        [DuplicateInvoiceController::class, 'index']
+    )->name('duplicate-invoices.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profile
     |--------------------------------------------------------------------------
     */
 
@@ -197,7 +264,6 @@ Route::middleware(['auth'])->group(function () {
         '/profile',
         [ProfileController::class, 'destroy']
     )->name('profile.destroy');
-
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

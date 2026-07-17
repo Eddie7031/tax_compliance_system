@@ -8,11 +8,12 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class VatExportController extends Controller
 {
-    public function excel(VatAnalysis $vatAnalysis)
+    public function export(VatAnalysis $vatAnalysis)
     {
         return Excel::download(
             new VatReconciliationExport($vatAnalysis),
-            'VAT_Reconciliation_'.$vatAnalysis->period.'.xlsx'
+            'VAT_Report_'.$vatAnalysis->period.'.xlsx'
+            $vatAnalysis->load('client', 'sales', 'purchases');
         );
     }
 }

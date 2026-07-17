@@ -3,7 +3,7 @@
 namespace App\Exports;
 
 use App\Models\VatAnalysis;
-use App\Models\VatTransaction;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
@@ -18,31 +18,79 @@ class VatReconciliationExport implements FromCollection, WithHeadings
 
     public function collection()
     {
-        return VatTransaction::where(
-            'vat_analysis_id',
-            $this->vatAnalysis->id
-        )
-        ->select(
-            'transaction_date',
-            'invoice_number',
-            'supplier_customer',
-            'description',
-            'transaction_type',
-            'amount_before_vat'
-        )
-        ->orderBy('transaction_date')
-        ->get();
+        $rows = collect();
+
+        foreach ($this->vatAnalysis->sales as $sale) {
+
+            $rows->push([
+
+                $sale->invoice_date,
+
+                $sale->invoice_number,
+
+                $sale->customer_name,
+
+                $sale->description,
+
+                'Sales',
+
+                $sale->net_amount,
+
+                $sale->vat_amount,
+
+                $sale->total_amount
+
+            ]);
+
+        }
+
+        foreach ($this->vatAnalysis->purchases as $purchase) {
+
+            $rows->push([
+
+                $purchase->invoice_date,
+
+                $purchase->invoice_number,
+
+                $purchase->supplier_name,
+
+                $purchase->description,
+
+                'Purchase',
+
+                $purchase->net_amount,
+
+                $purchase->vat_amount,
+
+                $purchase->total_amount
+
+            ]);
+
+        }
+
+        return $rows;
     }
 
     public function headings(): array
     {
         return [
+
             'Date',
+
             'Invoice',
-            'Supplier / Customer',
+
+            'Customer / Supplier',
+
             'Description',
+
             'Type',
-          'amount_before_vat',,
+
+            'Taxable Amount',
+
+            'VAT',
+
+            'Total Amount'
+
         ];
     }
 }

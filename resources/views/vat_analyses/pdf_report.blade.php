@@ -78,7 +78,18 @@ VAT Period:
 </p>
 
 
+@php
 
+$outputVat = $vatAnalysis->sales->sum('vat_amount');
+
+$inputVat = $vatAnalysis->purchases->sum('vat_amount');
+
+$netVat = $outputVat
+          - $inputVat
+          - $vatAnalysis->vat_withheld
+          - $vatAnalysis->credit_brought_forward;
+
+@endphp
 <h3>
 VAT Summary
 </h3>
@@ -95,15 +106,14 @@ VAT Summary
 <tr>
 <td>Output VAT</td>
 <td>
-KES {{ number_format($vatAnalysis->output_vat,2) }}
-</td>
+KES {{ number_format($outputVat,2) }}
 </tr>
 
 
 <tr>
 <td>Input VAT</td>
 <td>
-KES {{ number_format($vatAnalysis->input_vat,2) }}
+KES {{ number_format($inputVat,2) }}
 </td>
 </tr>
 
@@ -131,7 +141,7 @@ KES {{ number_format($vatAnalysis->credit_brought_forward,2) }}
 
 <td>
 <strong>
-KES {{ number_format($vatAnalysis->net_vat,2) }}
+KES {{ number_format($netVat,2) }}
 </strong>
 </td>
 

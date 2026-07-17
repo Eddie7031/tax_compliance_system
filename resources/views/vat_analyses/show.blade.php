@@ -1,363 +1,336 @@
 @extends('adminlte::page')
 
-@section('title','VAT Analysis Details')
-
-
-@section('content_header')
-
-<h1>
-    VAT Analysis Report
-</h1>
-
-@stop
-
-
+@section('title', 'VAT Reconciliation Report')
 
 @section('content')
 
+{{-- Toolbar --}}
+@include('vat_analyses.partials.report_toolbar')
 
-<div class="row">
+<div class="report-page">
 
+    <div class="container-fluid py-4">
 
-<div class="col-md-4">
+        {{-- Report Header --}}
+        @include('vat_analyses.partials.report_header')
 
-<div class="card card-primary">
+        <hr class="report-divider">
 
-<div class="card-header">
-Client Information
-</div>
+        {{-- Sales Register --}}
+        @include('vat_analyses.partials.sales')
 
+        <br>
 
-<div class="card-body">
+        {{-- Purchase Register --}}
+        @include('vat_analyses.partials.purchases')
 
+        <br>
 
-<p>
-<strong>Company:</strong>
+        {{-- VAT Computation --}}
+        @include('vat_analyses.partials.computation')
 
-{{ $vatAnalysis->client->company_name ?? 'N/A' }}
+        <br>
 
-</p>
+        {{-- Signatures --}}
+        @include('vat_analyses.partials.signatures')
 
+    </div>
 
-<p>
-<strong>KRA PIN:</strong>
-
-{{ $vatAnalysis->client->pin ?? 'N/A' }}
-
-</p>
-
-
-<p>
-<strong>Email:</strong>
-
-{{ $vatAnalysis->client->email ?? 'N/A' }}
-
-</p>
-
-
-<p>
-<strong>Industry:</strong>
-
-{{ $vatAnalysis->client->industry ?? 'N/A' }}
-
-</p>
-
+    {{-- Footer --}}
+    <div class="report-footer">
+        <strong>CONFIDENTIAL</strong> |
+        ENJ EAST AFRICA LLP |
+        Tax • Audit • Advisory |
+        Generated on {{ now()->format('d M Y H:i') }}
+    </div>
 
 </div>
 
-</div>
+{{-- ========================================================= --}}
+{{-- IMPORTANT: Keep the modals OUTSIDE the report container --}}
+{{-- ========================================================= --}}
 
-</div>
+@include('vat_analyses.partials.sales_modal')
+@include('vat_analyses.partials.purchase_modal')
 
+@endsection
 
+@push('css')
+<style>
 
+/*************************************************
+GENERAL
+*************************************************/
 
+body{
+    background:#f4f6f9;
+    font-family:Arial, Helvetica, sans-serif;
+    color:#333;
+}
 
-<div class="col-md-8">
+/*************************************************
+REPORT PAGE
+*************************************************/
 
+.report-page{
+    position:relative;
+    min-height:100vh;
+    background:#fff;
+    border-radius:10px;
+    overflow:hidden;
+    padding-bottom:30px;
+    box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
 
-<div class="card card-success">
+/*************************************************
+WATERMARK
+*************************************************/
 
+.report-page::before{
 
-<div class="card-header">
+    content:"";
 
-VAT Reconciliation Summary
-<hr>
+    position:absolute;
 
-<h4>Imported VAT Transactions</h4>
+    top:50%;
 
+    left:50%;
 
-<table class="table table-bordered table-striped">
+    transform:translate(-50%,-50%);
 
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Invoice</th>
-            <th>Supplier/Customer</th>
-            <th>Description</th>
-            <th>Type</th>
-            <th>VAT</th>
-        </tr>
-    </thead>
+    width:850px;
 
-    <tbody>
+    height:850px;
 
-    @forelse($vatAnalysis->transactions as $transaction)
+    background:url('{{ asset("images/logo.png") }}')
+               no-repeat center center;
 
-        <tr>
+    background-size:60%;
 
-            <td>{{ $transaction->transaction_date }}</td>
+    opacity:.04;
 
-            <td>{{ $transaction->invoice_number }}</td>
+    pointer-events:none;
 
-            <td>{{ $transaction->supplier_customer }}</td>
+    z-index:0;
 
-            <td>{{ $transaction->description }}</td>
+}
 
-            <td>{{ $transaction->transaction_type }}</td>
+/*************************************************
+CONTENT ABOVE WATERMARK
+*************************************************/
 
-            <td>KES {{ number_format($transaction->vat_amount,2) }}</td>
+.report-page .container-fluid{
 
-        </tr>
+    position:relative;
 
-    @empty
+    z-index:1;
 
-        <tr>
-            <td colspan="6" class="text-center">
-                No transactions imported.
-            </td>
-        </tr>
+}
 
-    @endforelse
+/*************************************************
+HEADER
+*************************************************/
 
-    </tbody>
+.report-header{
 
-</table>
-</div>
+    border-top:5px solid #003366;
 
+}
 
-<div class="card-body">
+.report-header h2{
 
+    color:#003366;
 
-<table class="table table-bordered">
+    font-weight:bold;
 
+}
 
-<tr>
-<th>VAT Period</th>
+.report-header h3{
 
-<td>
-{{ $vatAnalysis->period }}
-</td>
+    color:#222;
 
-</tr>
+}
 
+.report-divider{
 
+    border-top:3px solid #003366;
 
-<tr>
-<th>Output VAT (Sales VAT)</th>
+}
 
-<td>
-KES {{ number_format($vatAnalysis->output_vat,2) }}
-</td>
+/*************************************************
+CARDS
+*************************************************/
 
-</tr>
+.card{
 
+    border:none;
 
+    border-radius:10px;
 
-<tr>
-<th>Input VAT (Purchase VAT)</th>
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
 
-<td>
-KES {{ number_format($vatAnalysis->input_vat,2) }}
-</td>
+    margin-bottom:25px;
 
-</tr>
+}
 
+.card-header{
 
+    background:#003366!important;
 
-<tr>
-<th>VAT Withheld</th>
+    color:white!important;
 
-<td>
-KES {{ number_format($vatAnalysis->vat_withheld,2) }}
-</td>
+    font-weight:bold;
 
-</tr>
+}
 
+/*************************************************
+TABLES
+*************************************************/
 
+.table{
 
-<tr>
-<th>Credit Brought Forward</th>
+    font-size:13px;
 
-<td>
-KES {{ number_format($vatAnalysis->credit_brought_forward,2) }}
-</td>
+}
 
-</tr>
+.table thead{
 
+    background:#003366;
 
+    color:white;
 
-<tr class="bg-light">
+}
 
-<th>
-Net VAT Payable/(Credit)
-</th>
+.table thead th{
 
+    text-align:center;
 
-<td>
+    vertical-align:middle;
 
-<strong>
+}
 
-KES {{ number_format($vatAnalysis->net_vat,2) }}
+.table tbody td{
 
-</strong>
+    vertical-align:middle;
 
-</td>
+}
 
+.table tbody tr:nth-child(even){
 
-</tr>
+    background:#f8f9fa;
 
+}
 
-</table>
+.table-hover tbody tr:hover{
 
+    background:#fff8e1;
 
+}
 
-</div>
+/*************************************************
+HEADER TABLES
+*************************************************/
 
+.report-header table th{
 
-</div>
+    color:#003366;
 
+    font-weight:600;
 
-</div>
+}
 
+.report-header table td{
 
-</div>
+    color:#444;
 
+}
 
+/*************************************************
+BUTTONS
+*************************************************/
 
+.btn-primary{
 
+    background:#003366;
 
+    border-color:#003366;
 
-<div class="card">
+}
 
+/*************************************************
+FOOTER
+*************************************************/
 
-<div class="card-header">
+.report-footer{
 
-Workflow Approval
+    position:relative;
 
-</div>
+    margin-top:40px;
 
+    border-top:1px solid #ddd;
 
-<div class="card-body">
+    padding:10px;
 
+    text-align:center;
 
-<div class="row">
+    font-size:11px;
 
+    color:#666;
 
-<div class="col-md-4">
+    background:#fff;
 
-<strong>Prepared By</strong>
+}
 
-<p>
-{{ $vatAnalysis->prepared_by ?? 'Pending' }}
-</p>
+/*************************************************
+PRINT
+*************************************************/
 
-</div>
+@media print{
 
+    .btn,
+    .navbar,
+    .sidebar,
+    .main-header,
+    .main-footer,
+    .report-toolbar{
 
+        display:none!important;
 
-<div class="col-md-4">
+    }
 
-<strong>Reviewed By</strong>
+    .content-wrapper{
 
-<p>
-{{ $vatAnalysis->reviewed_by ?? 'Pending' }}
-</p>
+        margin:0!important;
 
-</div>
+        padding:0!important;
 
+    }
 
+    .report-page{
 
+        box-shadow:none;
 
-<div class="col-md-4">
+        border:none;
 
-<strong>Approved By</strong>
+        border-radius:0;
 
-<p>
-{{ $vatAnalysis->approved_by ?? 'Pending' }}
-</p>
+    }
 
-</div>
+    .card{
 
+        border:1px solid #ddd;
 
-</div>
+        box-shadow:none;
 
+    }
 
+    table{
 
-</div>
+        font-size:11px;
 
-</div>
+    }
 
+}
 
-
-<a href="{{ route('vat-analyses.index') }}"
-class="btn btn-secondary">
-    Back
-</a>
-<a href="{{ route('sales-vat.index', $vatAnalysis) }}"
-   class="btn btn-primary">
-    <i class="fas fa-shopping-cart"></i> Sales VAT Register
-</a>
-<a href="{{ route('vat-analyses.reconcile',$vatAnalysis) }}"
-class="btn btn-success">
-
-<i class="fas fa-calculator"></i>
-
-Run VAT Reconciliation
-
-</a>
-<a href="{{ route('purchase-vat.index', $vatAnalysis) }}"
-   class="btn btn-success">
-    <i class="fas fa-shopping-basket"></i>
-    Purchase VAT Register
-</a>
-
-<a href="{{ route('duplicate-invoices.index',$vatAnalysis) }}"
-class="btn btn-danger">
-
-<i class="fas fa-copy"></i>
-
-Duplicate Invoice Detection
-
-</a>
-<a href="{{ route('vat-analyses.edit',$vatAnalysis->id) }}" 
-class="btn btn-primary">
-
-Edit
-
-</a>
-<a href="{{ route('vat.export.excel',$vatAnalysis) }}"
-class="btn btn-success">
-
-<i class="fas fa-file-excel"></i>
-
-Export Excel
-
-</a>
-
-<a href="{{ route('vat.export.pdf',$vatAnalysis) }}"
-class="btn btn-danger">
-
-<i class="fas fa-file-pdf"></i>
-
-Generate PDF Report
-
-</a>
-<a href="{{ url('/vat-transactions/create/'.$vatAnalysis->id) }}" 
-class="btn btn-success">
-
-<i class="fas fa-upload"></i>
-Upload VAT Transactions
-
-</a>
-@stop
+</style>
+@endpush

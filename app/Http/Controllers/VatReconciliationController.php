@@ -3,51 +3,66 @@
 namespace App\Http\Controllers;
 
 use App\Models\VatAnalysis;
-use App\Models\VatTransaction;
+use Illuminate\Http\Request;
 
 class VatReconciliationController extends Controller
 {
-    public function reconcile(VatAnalysis $vatAnalysis)
+    public function review(VatAnalysis $vatAnalysis)
     {
-        // Get all transactions
-        $transactions = VatTransaction::where(
-            'vat_analysis_id',
-            $vatAnalysis->id
-        )
-        ->orderBy('transaction_date')
-        ->get();
+        return view(
+            'vat_analyses.review',
+            compact('vatAnalysis')
+        );
+    }
 
-        // Separate Sales and Purchases
-        $sales = $transactions->where('transaction_type', 'Sales');
+    public function updateReview(
+        Request $request,
+        VatAnalysis $vatAnalysis
+    ) {
 
-        $purchases = $transactions->where('transaction_type', 'Purchase');
+        $request->validate([
 
-        // Calculate VAT
-        $outputVat = $sales->sum('vat_amount');
+            'prepared_by' => 'nullable|string|max:255',
 
-        $inputVat = $purchases->sum('vat_amount');
+            'prepared_date' => 'nullable|date',
 
-        $netVat = $outputVat
-            - $inputVat
-            - $vatAnalysis->vat_withheld
-            - $vatAnalysis->credit_brought_forward;
+            'reviewed_by' => 'nullable|string|max:255',
 
-        // Update database
-        $vatAnalysis->update([
-            'output_vat' => $outputVat,
-            'input_vat' => $inputVat,
-            'net_vat' => $netVat,
+            'reviewed_date' => 'nullable|date',
+
+            'approved_by' => 'nullable|string|max:255',
+
+            'approved_date' => 'nullable|date',
+
+            'status' => 'required|in:Draft,Reviewed,Approved,Filed',
+
         ]);
 
-        // Return view
-        return view(
-            'vat_analyses.reconciliation',
-            compact(
-                'vatAnalysis',
-                'transactions',
-                'sales',
-                'purchases'
-            )
-        );
+        $vatAnalysis->update([
+
+            'prepared_by' => $request->prepared_by,
+
+            'prepared_date' => $request->prepared_date,
+
+            'reviewed_by' => $request->reviewed_by,
+
+            'reviewed_date' => $request->reviewed_date,
+
+            'approved_by' => $request->approved_by,
+
+            'approved_date' => $request->approved_date,
+
+            'status' => $request->status,
+
+        ]);
+
+        return redirect()
+
+            ->route('vat.review', $vatAnalysis)
+
+            ->with(
+                'success',
+                'Review details updated successfully.'
+            );
     }
 }

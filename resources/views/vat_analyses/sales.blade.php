@@ -1,71 +1,115 @@
-@extends('adminlte::page')
+<div class="card shadow-sm mt-3">
 
-@section('title', 'Sales VAT Register')
+    <div class="card-header bg-success">
 
-@section('content')
-<div class="card">
-    <div class="card-header bg-primary">
-        <h3>Sales VAT Register</h3>
+        <h5 class="mb-0 text-white">
+            SALES REGISTER
+        </h5>
+
     </div>
 
-    <div class="card-body">
+    <div class="card-body p-0">
 
-        <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-sm mb-0">
 
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Date</th>
-                    <th>Invoice</th>
-                    <th>Customer</th>
-                    <th>KRA PIN</th>
-                    <th>Description</th>
-                    <th>Taxable Value</th>
-                    <th>VAT</th>
-                    <th>Total</th>
-                </tr>
+            <thead class="table-light">
+
+            <tr>
+
+                <th>#</th>
+                <th>Date</th>
+                <th>Invoice</th>
+                <th>Customer</th>
+                <th>PIN</th>
+                <th>Description</th>
+                <th class="text-end">Taxable</th>
+                <th class="text-end">VAT</th>
+                <th class="text-end">Total</th>
+
+            </tr>
+
             </thead>
 
             <tbody>
 
-            @forelse($sales as $sale)
+            @forelse($vatAnalysis->sales as $sale)
 
                 <tr>
 
                     <td>{{ $loop->iteration }}</td>
 
-                    <td>{{ $sale->transaction_date }}</td>
+                    <td>{{ $sale->invoice_date }}</td>
 
                     <td>{{ $sale->invoice_number }}</td>
 
-                    <td>{{ $sale->supplier_customer }}</td>
+                    <td>{{ $sale->customer_name }}</td>
 
                     <td>{{ $sale->kra_pin }}</td>
 
                     <td>{{ $sale->description }}</td>
 
-                    <td>{{ number_format($sale->amount_before_vat,2) }}</td>
+                    <td class="text-end">
+                        {{ number_format($sale->net_amount,2) }}
+                    </td>
 
-                    <td>{{ number_format($sale->vat_amount,2) }}</td>
+                    <td class="text-end">
+                        {{ number_format($sale->vat_amount,2) }}
+                    </td>
 
-                    <td>{{ number_format($sale->total_amount,2) }}</td>
+                    <td class="text-end">
+                        {{ number_format($sale->total_amount,2) }}
+                    </td>
 
                 </tr>
 
             @empty
 
                 <tr>
+
                     <td colspan="9" class="text-center">
-                        No sales transactions found.
+                        No Sales Imported
                     </td>
+
                 </tr>
 
             @endforelse
 
             </tbody>
 
+            <tfoot class="table-secondary">
+
+                <tr>
+
+                    <th colspan="6" class="text-end">
+
+                        TOTAL SALES
+
+                    </th>
+
+                    <th class="text-end">
+
+                        {{ number_format($vatAnalysis->sales->sum('net_amount'),2) }}
+
+                    </th>
+
+                    <th class="text-end">
+
+                        {{ number_format($vatAnalysis->sales->sum('vat_amount'),2) }}
+
+                    </th>
+
+                    <th class="text-end">
+
+                        {{ number_format($vatAnalysis->sales->sum('total_amount'),2) }}
+
+                    </th>
+
+                </tr>
+
+            </tfoot>
+
         </table>
 
     </div>
+
 </div>
-@endsection
