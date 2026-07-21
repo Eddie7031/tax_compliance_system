@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\VatAnalysis;
 
-class VatPurchasesController extends Controller
+class VatPurchaseController extends Controller
 {
     public function index(VatAnalysis $vatAnalysis)
     {

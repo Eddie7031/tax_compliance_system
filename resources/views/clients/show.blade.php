@@ -193,9 +193,20 @@
     <i class="fas fa-calculator"></i>
 
     VAT Analysis
+<li class="nav-item">
 
+    <a class="nav-link bg-info text-white"
+       href="{{ route('paye-analyses.index') }}">
+
+        <i class="fas fa-money-check-alt"></i>
+
+        PAYE Analysis
+
+    </a>
+
+</li>
 </a>
-            
+
             <li class="nav-item">
                 <a class="nav-link"
                    id="documents-tab"
@@ -272,7 +283,7 @@
                     <i class="fas fa-plus-circle"></i>
                     Add Tax Obligation
                 </a>
-                
+
                 <table class="table table-bordered table-hover">
                     <thead class="bg-success">
                         <tr>

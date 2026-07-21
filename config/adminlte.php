@@ -337,7 +337,11 @@ return [
             ],
         ],
     ],
-
+[
+    'text' => 'Payroll Settings',
+    'route' => 'payroll-settings.edit',
+    'icon' => 'fas fa-cogs',
+],
     [
         'text' => 'Withholding Tax',
         'icon' => 'fas fa-percent',

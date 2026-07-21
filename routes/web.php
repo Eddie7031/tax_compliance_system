@@ -11,22 +11,68 @@ use App\Http\Controllers\VatAnalysisController;
 use App\Http\Controllers\VatPurchaseController;
 use App\Http\Controllers\VatTransactionController;
 use App\Http\Controllers\SalesVatController;
+use App\Http\Controllers\PurchaseVatController;
 use App\Http\Controllers\VatReconciliationController;
 use App\Http\Controllers\VatImportController;
 use App\Http\Controllers\VatPdfController;
 use App\Http\Controllers\VatExportController;
 use App\Http\Controllers\DuplicateInvoiceController;
-use App\Http\Controllers\PurchaseVatController;
-
+use App\Http\Controllers\PayeAnalysisController;
+use App\Http\Controllers\PayrollSettingController;
+use App\Http\Controllers\EmployeePayrollController;
+use App\Http\Controllers\PayeImportController;
+use App\Http\Controllers\PayrollExportController;
 /*
 |--------------------------------------------------------------------------
 | Welcome
 |--------------------------------------------------------------------------
 */
+Route::put(
+    '/paye-analyses/{payeAnalysis}/approval',
+    [PayeAnalysisController::class,'updateApproval']
+)->name('paye-analyses.updateApproval');
+Route::get(
+    '/paye-analyses/{payeAnalysis}/export/excel',
+    [PayrollExportController::class,'excel']
+)->name('payroll.export.excel');
 
+Route::get(
+    '/paye-analyses/{payeAnalysis}/export/csv',
+    [PayrollExportController::class,'csv']
+)->name('payroll.export.csv');
+Route::post(
+    '/paye-analyses/{payeAnalysis}/payroll/import',
+    [
+        PayeImportController::class,
+        'importPayroll'
+    ]
+)->name('paye.payroll.import');
+Route::get(
+    '/paye-analyses/{payeAnalysis}/employee-payrolls',
+    [EmployeePayrollController::class, 'index']
+)->name('employee-payrolls.index');
+Route::post(
+    '/paye-analyses/{payeAnalysis}/employee-payrolls',
+    [EmployeePayrollController::class, 'store']
+)->name('employee-payrolls.store');
+
+Route::get(
+    '/paye-analyses/{payeAnalysis}/employee-payrolls',
+    [EmployeePayrollController::class, 'index']
+)->name('employee-payrolls.index');
+Route::get('/payroll-settings', [
+    PayrollSettingController::class,
+    'edit'
+])->name('payroll-settings.edit');
+
+Route::put('/payroll-settings', [
+    PayrollSettingController::class,
+    'update'
+])->name('payroll-settings.update');
 Route::get('/', function () {
     return view('welcome');
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -35,10 +81,15 @@ Route::get('/', function () {
 */
 
 Route::get('/dashboard', function () {
+
     return view('admin.dashboard', [
         'clients' => Client::count(),
     ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+
+})->middleware(['auth', 'verified'])
+  ->name('dashboard');
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +99,7 @@ Route::get('/dashboard', function () {
 
 Route::middleware(['auth'])->group(function () {
 
+
     /*
     |--------------------------------------------------------------------------
     | Clients
@@ -55,6 +107,21 @@ Route::middleware(['auth'])->group(function () {
     */
 
     Route::resource('clients', ClientController::class);
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PAYE Analyses
+    |--------------------------------------------------------------------------
+    */
+
+    Route::resource(
+        'paye-analyses',
+        PayeAnalysisController::class
+    );
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -64,18 +131,31 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post(
         '/clients/{client}/documents',
-        [ClientDocumentController::class, 'store']
+        [
+            ClientDocumentController::class,
+            'store'
+        ]
     )->name('documents.store');
+
 
     Route::get(
         '/documents/{document}/download',
-        [ClientDocumentController::class, 'download']
+        [
+            ClientDocumentController::class,
+            'download'
+        ]
     )->name('documents.download');
+
 
     Route::delete(
         '/documents/{document}',
-        [ClientDocumentController::class, 'destroy']
+        [
+            ClientDocumentController::class,
+            'destroy'
+        ]
     )->name('documents.destroy');
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -85,28 +165,49 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get(
         '/clients/{client}/tax-obligations/create',
-        [TaxObligationController::class, 'create']
+        [
+            TaxObligationController::class,
+            'create'
+        ]
     )->name('tax-obligations.create');
+
 
     Route::post(
         '/clients/{client}/tax-obligations',
-        [TaxObligationController::class, 'store']
+        [
+            TaxObligationController::class,
+            'store'
+        ]
     )->name('tax-obligations.store');
+
 
     Route::get(
         '/tax-obligations/{taxObligation}/edit',
-        [TaxObligationController::class, 'edit']
+        [
+            TaxObligationController::class,
+            'edit'
+        ]
     )->name('tax-obligations.edit');
+
 
     Route::put(
         '/tax-obligations/{taxObligation}',
-        [TaxObligationController::class, 'update']
+        [
+            TaxObligationController::class,
+            'update'
+        ]
     )->name('tax-obligations.update');
+
 
     Route::delete(
         '/tax-obligations/{taxObligation}',
-        [TaxObligationController::class, 'destroy']
+        [
+            TaxObligationController::class,
+            'destroy'
+        ]
     )->name('tax-obligations.destroy');
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -114,7 +215,12 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('vat-analyses', VatAnalysisController::class);
+    Route::resource(
+        'vat-analyses',
+        VatAnalysisController::class
+    );
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -122,7 +228,12 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('vat-purchases', VatPurchaseController::class);
+    Route::resource(
+        'vat-purchases',
+        VatPurchaseController::class
+    );
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -132,13 +243,22 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get(
         '/vat-transactions/create/{vatAnalysis}',
-        [VatTransactionController::class, 'create']
+        [
+            VatTransactionController::class,
+            'create'
+        ]
     )->name('vat-transactions.create');
+
 
     Route::post(
         '/vat-transactions',
-        [VatTransactionController::class, 'store']
+        [
+            VatTransactionController::class,
+            'store'
+        ]
     )->name('vat-transactions.store');
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -148,8 +268,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get(
         '/vat-analyses/{vatAnalysis}/sales',
-        [SalesVatController::class, 'index']
+        [
+            SalesVatController::class,
+            'index'
+        ]
     )->name('sales-vat.index');
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -159,8 +284,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get(
         '/vat-analyses/{vatAnalysis}/purchases',
-        [PurchaseVatController::class, 'index']
+        [
+            PurchaseVatController::class,
+            'index'
+        ]
     )->name('purchase-vat.index');
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -168,28 +298,40 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get(
-        '/vat-analyses/{vatAnalysis}/reconcile',
-        [VatReconciliationController::class, 'reconcile']
-    )->name('vat-analyses.reconcile');
+    Route::prefix('vat-analyses/{vatAnalysis}')
+        ->group(function () {
 
-    Route::prefix('vat-analyses/{vatAnalysis}')->group(function () {
 
-        Route::get(
-            '/review',
-            [VatReconciliationController::class, 'review']
-        )->name('vat.review');
+            Route::get(
+                '/reconciliation',
+                [
+                    VatReconciliationController::class,
+                    'index'
+                ]
+            )->name('vat.reconciliation');
 
-        Route::put(
-            '/review',
-            [VatReconciliationController::class, 'updateReview']
-        )->name('vat.review.update');
 
-        Route::get(
-            '/reconciliation',
-            [VatReconciliationController::class, 'index']
-        )->name('vat.reconciliation');
-    });
+            Route::get(
+                '/review',
+                [
+                    VatReconciliationController::class,
+                    'review'
+                ]
+            )->name('vat.review');
+
+
+            Route::put(
+                '/review',
+                [
+                    VatReconciliationController::class,
+                    'updateReview'
+                ]
+            )->name('vat.review.update');
+
+
+        });
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -197,15 +339,26 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
+
     Route::post(
         '/vat-analyses/{vatAnalysis}/sales/import',
-        [VatImportController::class, 'importSales']
+        [
+            VatImportController::class,
+            'importSales'
+        ]
     )->name('vat.sales.import');
+
+
 
     Route::post(
         '/vat-analyses/{vatAnalysis}/purchases/import',
-        [VatImportController::class, 'importPurchases']
+        [
+            VatImportController::class,
+            'importPurchases'
+        ]
     )->name('vat.purchase.import');
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -213,25 +366,26 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get(
-        '/vat-analyses/{vatAnalysis}/pdf',
-        [VatPdfController::class, 'download']
-    )->name('vat.pdf');
-
-    Route::get(
-        '/vat-analyses/{vatAnalysis}/excel',
-        [VatExportController::class, 'export']
-    )->name('vat.export');
 
     Route::get(
         '/vat-analyses/{vatAnalysis}/export/pdf',
-        [VatPdfController::class, 'generate']
+        [
+            VatPdfController::class,
+            'generate'
+        ]
     )->name('vat.export.pdf');
+
+
 
     Route::get(
         '/vat-analyses/{vatAnalysis}/export/excel',
-        [VatExportController::class, 'excel']
+        [
+            VatExportController::class,
+            'excel'
+        ]
     )->name('vat.export.excel');
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -239,10 +393,16 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
+
     Route::get(
         '/vat-analyses/{vatAnalysis}/duplicate-invoices',
-        [DuplicateInvoiceController::class, 'index']
+        [
+            DuplicateInvoiceController::class,
+            'index'
+        ]
     )->name('duplicate-invoices.index');
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -250,20 +410,35 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
+
     Route::get(
         '/profile',
-        [ProfileController::class, 'edit']
+        [
+            ProfileController::class,
+            'edit'
+        ]
     )->name('profile.edit');
+
 
     Route::patch(
         '/profile',
-        [ProfileController::class, 'update']
+        [
+            ProfileController::class,
+            'update'
+        ]
     )->name('profile.update');
+
 
     Route::delete(
         '/profile',
-        [ProfileController::class, 'destroy']
+        [
+            ProfileController::class,
+            'destroy'
+        ]
     )->name('profile.destroy');
+
+
 });
 
-require __DIR__ . '/auth.php';
+
+require __DIR__.'/auth.php';
